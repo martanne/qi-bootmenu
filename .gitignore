@@ -1,0 +1,7 @@
+# normal ignores
+.*
+*.o
+!.gitignore
+
+# top-level ignores
+/*.tar.gz
