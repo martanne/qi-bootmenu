@@ -63,7 +63,7 @@ typedef struct {
 	const char *dev;
 	const char *kernel;
 	const char *cmdline;
-	const char *icon;
+	const char *logo;
 } BootItem;
 
 /* filesystems built into the kernel */ 
@@ -357,6 +357,10 @@ Eina_List* scan_system() {
 			sys->cmdline = strdup(buf);
 			fclose(f);
 		}
+
+		snprintf(buf, sizeof buf, "%s/%s/boot/bootlogo.png", MOUNTPOINT, mnt);
+		if (!stat(buf, &st))
+			sys->logo = strdup(buf);
 
 		systems = eina_list_append(systems, sys);
 		
