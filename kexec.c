@@ -9,19 +9,13 @@
 #include <sys/utsname.h>
 #include <Eina.h>
 #include "config.h"
-#include "qi-bootmenu.h"
+#include "kexec.h"
 #include "util.h"
 #include "fstype/fstype.h"
 
 #ifndef COMMAND_LINE_SIZE
 # define COMMAND_LINE_SIZE 256
 #endif
-
-#define MOUNTPOINT "/mnt"
-#define MODPROBE "/sbin/modprobe"
-#define KEXEC "/sbin/kexec"
-/* XXX: use --command-line= instead? */
-#define KEXEC_CMDLINE "--append="
 
 /* filesystems built into the kernel */ 
 static Eina_List *fs_core;
@@ -88,7 +82,7 @@ static Eina_List* get_kernel_filesystems_builtin() {
 	Eina_List *fs = NULL; 
 
 	char line[32];
-	
+		
 	while (fgets(line, sizeof(line), f)) {
 		/* ignore lines starting with nodev */
 		if (!strncmp(line, "nodev", sstrlen("nodev")))
@@ -188,6 +182,9 @@ Eina_List* scan_system() {
 	char buf[COMMAND_LINE_SIZE];
 	struct stat st;
 
+	if (systems)
+		return systems;
+
 	/* check if we need to read data from /proc first */
 	if (!partitions)
 		partitions = get_partitions();
@@ -239,7 +236,6 @@ Eina_List* scan_system() {
 		if (stat(buf, &st)) {
 			/* no uImage present now check for zImage */
 			buf[sstrlen(MOUNTPOINT) + sstrlen("/") + strlen(mnt) + sstrlen("/boot/")] = 'z';
-			puts(buf);
 			if (stat(buf, &st)) {
 				eprint("No kernel found at '%s'\n", buf);
 				umount(mnt);
@@ -263,6 +259,8 @@ Eina_List* scan_system() {
 		snprintf(buf, sizeof buf, "%s/%s/boot/bootlogo.png", MOUNTPOINT, mnt);
 		if (!stat(buf, &st))
 			sys->logo = strdup(buf);
+		else
+			sys->logo = DEFAULT_LOGO;
 
 		systems = eina_list_append(systems, sys);
 		
@@ -338,6 +336,9 @@ void diagnostics() {
 	BootItem *s;
 	char *p;
 
+	if (!eina_mempool_init() || !eina_list_init())
+		return;
+
 	puts("Partitions:");
 	partitions = get_partitions();
 
@@ -370,5 +371,4 @@ void diagnostics() {
 		printf("umount '%s'\n", s->dev);
 		printf("kexec -e\n\n");
 	}
-
 }

@@ -1,4 +1,4 @@
-
+#define countof(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define sstrlen(str) (sizeof(str) - 1)
 
 #ifdef NDEBUG

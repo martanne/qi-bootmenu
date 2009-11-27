@@ -21,15 +21,10 @@
  *
  */
 
-#include <stdbool.h>
-#include <Eina.h>
-#include "qi-bootmenu.h"
 #include "kexec.h"
+#include "gui.h"
 
 int main(int argc, char **argv) {
-
-	if (!eina_mempool_init() || !eina_list_init())
-		return 1;
 
 	if (argc > 1 && argv[1][0] == '-') {
 		switch (argv[1][1]) {
@@ -39,7 +34,5 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	eina_list_shutdown();
-
-	return 0;
+	return gui(argc, argv);
 }

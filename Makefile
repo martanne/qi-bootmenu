@@ -1,6 +1,6 @@
 include config.mk
 
-SRC += qi-bootmenu.c util.c kexec.c fstype/fstype.c
+SRC += qi-bootmenu.c gui.c kexec.c util.c fstype/fstype.c
 OBJ = ${SRC:.c=.o}
 
 all: clean options qi-bootmenu
@@ -31,7 +31,8 @@ clean:
 dist: clean
 	@echo creating dist tarball
 	@mkdir -p qi-bootmenu-${VERSION}
-	@cp -r Makefile config.h config.mk qi-bootmenu.c fstype \
+	@cp -r Makefile config.h config.mk qi-bootmenu.c gui.c gui.h \
+		kexec.c kexec.h util.c util.h fstype \
 		qi-bootmenu-${VERSION}
 	@tar -cf qi-bootmenu-${VERSION}.tar qi-bootmenu-${VERSION}
 	@gzip qi-bootmenu-${VERSION}.tar

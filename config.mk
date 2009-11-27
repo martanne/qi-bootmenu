@@ -5,8 +5,8 @@ VERSION = pre-alpha
 PREFIX = /usr/local
 MANPREFIX = ${PREFIX}/share/man
 
-INCS = $(shell pkg-config --cflags eina-0) 
-LIBS = -lc $(shell pkg-config --libs eina-0) 
+INCS = $(shell pkg-config --cflags eina-0 evas ecore ecore-evas) 
+LIBS = -lc $(shell pkg-config --libs eina-0 evas ecore ecore-evas) 
 
 # XXX: -std=c99 
 
