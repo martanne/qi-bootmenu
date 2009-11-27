@@ -338,11 +338,16 @@ Eina_List* scan_system() {
 		}
 
 		/* XXX: replace fixed GTA02 with machine type */
-		snprintf(buf, sizeof buf, "%s/%s/boot/zImage-GTA02.bin", MOUNTPOINT, mnt);
+		snprintf(buf, sizeof buf, "%s/%s/boot/uImage-GTA02.bin", MOUNTPOINT, mnt);
 		if (stat(buf, &st)) {
-			eprint("No kernel found at '%s'\n", buf);
-			umount(mnt);
-			goto next;
+			/* no uImage present now check for zImage */
+			buf[sstrlen(MOUNTPOINT) + sstrlen("/") + strlen(mnt) + sstrlen("/boot/")] = 'z';
+			puts(buf);
+			if (stat(buf, &st)) {
+				eprint("No kernel found at '%s'\n", buf);
+				umount(mnt);
+				goto next;
+			}
 		}
 
 		BootItem *sys = calloc(sizeof(BootItem), 1);
