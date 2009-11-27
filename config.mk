@@ -3,7 +3,7 @@ VERSION = pre-alpha
 # Customize below to fit your system
 
 PREFIX = /usr/local
-MANPREFIX = ${PREFIX}/share/man
+DATADIR = ${PREFIX}/share/qi-bootmenu
 
 INCS = $(shell pkg-config --cflags eina-0 evas ecore ecore-evas) 
 LIBS = -lc $(shell pkg-config --libs eina-0 evas ecore ecore-evas) 

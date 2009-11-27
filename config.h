@@ -12,5 +12,5 @@
 #define FONT_SIZE 20 
 #define DEFAULT_LOGO "/usr/share/qi-bootmenu/defaultlogo.png"
 #define POWEROFF_LOGO "/usr/share/qi-bootmenu/poweroff.png"
-#define LOGO_HEIGHT 100
 #define LOGO_WIDTH 100 
+#define LOGO_HEIGHT 80

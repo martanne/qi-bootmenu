@@ -94,7 +94,7 @@ int gui(int argc, char **argv) {
 
 	/* search for system images to boot and display them in a list */
 	Eina_List *l, *systems = scan_system();
-	int i, y = 50;
+	int i, y = 25;
 	BootItem *s;
 
 	EINA_LIST_FOREACH(systems, l, s) {

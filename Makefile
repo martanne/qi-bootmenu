@@ -32,7 +32,7 @@ dist: clean
 	@echo creating dist tarball
 	@mkdir -p qi-bootmenu-${VERSION}
 	@cp -r Makefile config.h config.mk qi-bootmenu.c gui.c gui.h \
-		kexec.c kexec.h util.c util.h fstype \
+		kexec.c kexec.h util.c util.h fstype data \
 		qi-bootmenu-${VERSION}
 	@tar -cf qi-bootmenu-${VERSION}.tar qi-bootmenu-${VERSION}
 	@gzip qi-bootmenu-${VERSION}.tar
@@ -43,6 +43,8 @@ install: qi-bootmenu
 	@mkdir -p ${DESTDIR}${PREFIX}/sbin
 	@cp -f qi-bootmenu ${DESTDIR}${PREFIX}/sbin
 	@chmod 755 ${DESTDIR}${PREFIX}/sbin/qi-bootmenu
+	@mkdir -p ${DESTDIR}${DATADIR}
+	@cp -r data/* ${DESTDIR}${DATADIR}
 
 uninstall:
 	@echo removing executable file from ${DESTDIR}${PREFIX}/sbin
