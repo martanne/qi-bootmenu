@@ -1,6 +1,6 @@
 include config.mk
 
-SRC += qi-bootmenu.c fstype/fstype.c
+SRC += qi-bootmenu.c util.c kexec.c fstype/fstype.c
 OBJ = ${SRC:.c=.o}
 
 all: clean options qi-bootmenu
