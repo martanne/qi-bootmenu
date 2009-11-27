@@ -422,12 +422,12 @@ bool boot_kernel(BootItem *i) {
 		return false;
 	}
 
-	const char *kexec_exec[] = { KEXEC , "-e", "-l", NULL };
+	const char *kexec_exec[] = { KEXEC , "-e", NULL };
 
 	/* XXX: assumes we are still chdir()-ed */
 	umount(i->dev + sstrlen("/dev/"));
 
-	if (execve(kexec_exec[0], (char *const *)kexec_load, NULL)) {
+	if (execve(kexec_exec[0], (char *const *)kexec_exec, NULL)) {
 		eprint("Couldn't exec kernel '%s'\n", i->kernel);
 		return false;
 	}
