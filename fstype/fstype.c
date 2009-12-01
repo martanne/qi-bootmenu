@@ -387,17 +387,17 @@ struct imagetype {
  * The same goes for LUKS as for LVM.
  */
 static struct imagetype images[] = {
+	{1, "ext4", ext4_image},
+	{1, "ext3", ext3_image},
+	{1, "ext2", ext2_image},
+	{0, "jffs2", jffs2_image},
+	{0, "vfat", vfat_image},
 	{0, "gzip", gzip_image},
 	{0, "cramfs", cramfs_image},
 	{0, "romfs", romfs_image},
 	{0, "xfs", xfs_image},
-	{1, "ext4", ext4_image},
 	{0, "squashfs", squashfs_image},
-	{1, "ext3", ext3_image},
-	{1, "ext2", ext2_image},
 	{1, "minix", minix_image},
-	{0, "jffs2", jffs2_image},
-	{0, "vfat", vfat_image},
 	{1, "nilfs2", nilfs2_image},
 	{2, "ocfs2", ocfs2_image},
 	{8, "reiserfs", reiserfs_image},
