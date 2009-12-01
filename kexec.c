@@ -244,8 +244,9 @@ Eina_List* scan_system() {
 		}
 
 		BootItem *sys = calloc(sizeof(BootItem), 1);
-		sys->kernel = strdup(buf);
+		sys->fs = fs;
 		sys->dev = dev;
+		sys->kernel = strdup(buf);
 		
 		/* XXX: replace fixed GTA02 with machine type */
 		snprintf(buf, sizeof buf, "%s/%s/boot/append-GTA02", MOUNTPOINT, mnt);
@@ -274,7 +275,7 @@ Eina_List* scan_system() {
 /* Genereate kernel command line for use with kexec. It consist of the following:
  * 
  *  - /proc/cmdline of the running system
- *  - root=$PARTITON
+ *  - root=$PARTITON rootfstype=$FS
  *  - append-$MACHINE in the same directory as the kernel
  */
 
@@ -291,8 +292,9 @@ char* get_kernel_cmdline(BootItem *i) {
 		fclose(f);
 	}
 
-	/* append root=/dev/... and the image specific command line */
-	int len = snprintf(s, sizeof(cmdline) - (s - cmdline), "root=%s %s", i->dev, i->cmdline);
+	/* append root partition, filesystem and the image specific command line */
+	int len = snprintf(s, sizeof(cmdline) - (s - cmdline), "root=%s rootfstype=%s %s",
+	                   i->dev, i->fs, i->cmdline || "");
 	if (len > 0 && s[len - 1] == '\n')
 		s[len - 1] = '\0';
 

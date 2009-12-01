@@ -2,6 +2,7 @@
 #include <Eina.h>
 
 typedef struct {
+	const char *fs;
 	const char *dev;
 	const char *kernel;
 	const char *cmdline;
