@@ -292,7 +292,7 @@ char* get_kernel_cmdline(BootItem *i) {
 
 	/* append root partition, filesystem and the image specific command line */
 	int len = snprintf(s, sizeof(cmdline) - (s - cmdline), "root=%s rootfstype=%s %s",
-	                   i->dev, i->fs, i->cmdline || "");
+	                   i->dev, i->fs, i->cmdline ? i->cmdline : "");
 	if (len > 0 && s[len - 1] == '\n')
 		s[len - 1] = '\0';
 
