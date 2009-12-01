@@ -82,14 +82,12 @@ static Eina_List* get_kernel_filesystems_builtin() {
 	Eina_List *fs = NULL; 
 
 	char line[32];
-		
+
 	while (fgets(line, sizeof(line), f)) {
-		/* ignore lines starting with nodev */
-		if (!strncmp(line, "nodev", sstrlen("nodev")))
-			continue;
+		/* overwrite new line */
 		line[strlen(line) - 1] = '\0';
-		/* skip tab with line + 1*/
-		fs = eina_list_append(fs, strdup(line + 1));
+		/* skip tab or "nodev\t" */
+		fs = eina_list_append(fs, strdup(line + (line[0] == '\t' ? 1 : sstrlen("nodev\t"))));
 	}
 
 	fclose(f);
