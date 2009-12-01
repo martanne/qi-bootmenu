@@ -32,7 +32,7 @@ dist: clean
 	@echo creating dist tarball
 	@mkdir -p qi-bootmenu-${VERSION}
 	@cp -r Makefile config.h config.mk qi-bootmenu.c gui.c gui.h \
-		kexec.c kexec.h util.c util.h fstype data \
+		gui-*.c kexec.c kexec.h util.c util.h fstype data \
 		qi-bootmenu-${VERSION}
 	@tar -cf qi-bootmenu-${VERSION}.tar qi-bootmenu-${VERSION}
 	@gzip qi-bootmenu-${VERSION}.tar

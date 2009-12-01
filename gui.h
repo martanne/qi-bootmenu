@@ -1,1 +1,1 @@
-int gui(int argc, char **argv);
+int gui_show(int argc, char **argv);

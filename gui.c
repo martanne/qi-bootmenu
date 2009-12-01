@@ -15,8 +15,8 @@
 static Ecore_Evas *ee;
 static Evas *evas;
 
-void poweroff(void *data, Evas *evas, Evas_Object *obj, void *event);
-static void draw_item_border(Evas_Object *item);
+static void poweroff(void *data, Evas *evas, Evas_Object *obj, void *event);
+static void bootitem_clicked(void *data, Evas *evas, Evas_Object *item, void *event); 
 
 typedef struct {
 	const char *text;
@@ -28,26 +28,42 @@ MenuItem menu[] = {
 	{ "Power Off", POWEROFF_LOGO, poweroff },
 };
 
-void poweroff(void *data, Evas *evas, Evas_Object *item, void *event) {
-	draw_item_border(item);
+#include "gui-list.c"
+#include "gui-grid.c"
+
+typedef struct {
+	char option;
+	void(*show)(Eina_List *systems);
+	void(*select)(Evas_Object *item);
+} Gui;
+
+Gui guis[] = {
+	{ 'l', gui_list, gui_list_select_item },
+	{ 'g', gui_grid, NULL },
+};
+
+/* if no option is passed in then use the first entry */
+static Gui *gui = &guis[0];
+
+static void poweroff(void *data, Evas *evas, Evas_Object *item, void *event) {
+	if (gui->select)
+		gui->select(item);
 	system("poweroff");
 }
 
 static void bootitem_clicked(void *data, Evas *evas, Evas_Object *item, void *event) {
-	draw_item_border(item);
+	if (gui->select)
+		gui->select(item);
 	boot_kernel((BootItem*)data);
 	/* XXX: shouldn't be reached, display an error message? */
 }
 
-static bool canvas_init(){
+static bool gui_init(){
 	if (!ecore_init() || !ecore_evas_init())
 		return false;
 
 	/* XXX: fixed dimensions */
-	if (getenv("DISPLAY"))
-		ee = ecore_evas_software_x11_new(NULL, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-	else
-		ee = ecore_evas_fb_new(NULL, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+	ee = ecore_evas_new(NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, NULL);
 
 	if (!ee)
 		return false;
@@ -57,79 +73,31 @@ static bool canvas_init(){
 	ecore_evas_show(ee);
 
 	evas = ecore_evas_get(ee);
+	if (!evas)
+		return false;
+
 	evas_font_path_append(evas, FONT_PATH);
 
 	return true;
 }
 
-static void draw_item(const char *text, const char *logo, void(*callback)(void*, Evas*, Evas_Object*, void *),
-                      void *data, int x, int y) {
+int gui_show(int argc, char **argv) {
 
-	Evas_Object *ebox, *elogo, *etext;
+	if (argc > 1 && argv[1][0] == '-') {
+		int i;
+		for (i = 0; i < countof(guis); i++) {
+			if (argv[1][1] == guis[i].option)
+				gui = &guis[i];
+		}
+	}
 
-	elogo = evas_object_image_add(evas);
-	evas_object_image_file_set(elogo, logo, NULL);
-	evas_object_image_fill_set(elogo, 0, 0, LOGO_WIDTH, LOGO_HEIGHT);
-	evas_object_resize(elogo, LOGO_WIDTH, LOGO_HEIGHT);
-	evas_object_show(elogo);
-
-	etext = evas_object_text_add(evas);
-	evas_object_text_font_set(etext, FONT, FONT_SIZE);
-	evas_object_text_text_set(etext, text);
-	evas_object_show(etext);
-
-	ebox = evas_object_box_add(evas);
-	evas_object_box_align_set(ebox, 0, 0.5);
-	evas_object_box_padding_set(ebox, 10, 10);
-	evas_object_move(ebox, x, y);
-	evas_object_resize(ebox, SCREEN_WIDTH, LOGO_HEIGHT);
-	evas_object_box_append(ebox, elogo);
-	evas_object_box_append(ebox, etext);
-	evas_object_event_callback_add(ebox, EVAS_CALLBACK_MOUSE_UP, callback, data);
-
-	evas_object_show(ebox);
-}
-
-static void draw_item_border(Evas_Object *item) {
-	Evas_Object *eline; 
-	Evas_Coord x, y, w, h;
-	evas_object_geometry_get(item, &x, &y, &w, &h);
-	eline = evas_object_line_add(evas);
-	evas_object_line_xy_set(eline, x, y, x+w, y);
-	evas_object_show(eline);
-	eline = evas_object_line_add(evas);
-	evas_object_line_xy_set(eline, x, y, x, y+h);
-	evas_object_show(eline);
-	eline = evas_object_line_add(evas);
-	evas_object_line_xy_set(eline, x+w, y, x+w, y+h);
-	evas_object_show(eline);
-	eline = evas_object_line_add(evas);
-	evas_object_line_xy_set(eline, x, y+h, x+w, y+h);
-	evas_object_show(eline);
-}
-
-int gui(int argc, char **argv) {
-
-	if (!canvas_init()) {
+	if (!gui_init()) {
 		eprint("Couldn't init GUI\n");
 		return 1;
 	}
 
-	/* search for system images to boot and display them in a list */
-	Eina_List *l, *systems = scan_system();
-	int i, y = 0;
-	BootItem *s;
-
-	EINA_LIST_FOREACH(systems, l, s) {
-		draw_item(s->dev, s->logo, bootitem_clicked, s,  0, y);
-		y += LOGO_HEIGHT;
-	}
-
-	/* add pre defined menu entries */
-	for (i = 0; i < countof(menu); i++) {
-		draw_item(menu[i].text, menu[i].logo, menu[i].callback, NULL,  0, y);
-		y += LOGO_HEIGHT;
-	}
+	/* search for system images to boot and display them */
+	gui->show(scan_system());
 
 	ecore_main_loop_begin();
 
