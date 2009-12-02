@@ -6,7 +6,7 @@ PREFIX = /usr/local
 DATADIR = ${PREFIX}/share/qi-bootmenu
 
 INCS = $(shell pkg-config --cflags eina-0 evas ecore ecore-evas) 
-LIBS = -lc $(shell pkg-config --libs eina-0 evas ecore ecore-evas) 
+LIBS = -lc -lz $(shell pkg-config --libs eina-0 evas ecore ecore-evas) 
 
 # XXX: -std=c99 
 
