@@ -227,7 +227,7 @@ Eina_List* scan_system(Eina_List *dev_ignore) {
 			goto next;
 		}
 
-		if (mount(dev, mnt, fs, MS_RDONLY, NULL) && errno != EBUSY) { 
+		if (mount(dev, mnt, fs, MS_RDONLY, NULL)) { 
 			perror("mount");
 			goto next;
 		}
