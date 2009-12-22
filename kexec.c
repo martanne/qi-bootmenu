@@ -173,7 +173,7 @@ static bool is_supported_filesystem(const char *fs) {
 	return false;
 }
 
-Eina_List* scan_system() {
+Eina_List* scan_system(Eina_List *dev_ignore) {
 
 	Eina_List *l;
 	const char *dev, *mnt, *fs;
@@ -200,6 +200,9 @@ Eina_List* scan_system() {
 	}
 
 	EINA_LIST_FOREACH(partitions, l, dev) {
+
+		if (eina_list_search_unsorted(dev_ignore, EINA_COMPARE_CB(strcmp), dev))
+			continue;
 	
 		int fd = open(dev, O_RDONLY);
 		if (fd < 0) {
@@ -331,13 +334,10 @@ bool boot_kernel(BootItem *i) {
 	return true;
 }
 
-void diagnostics() {
+void diagnostics(Eina_List *dev_ignore) {
 	Eina_List *l;
 	BootItem *s;
 	char *p;
-
-	if (!eina_mempool_init() || !eina_list_init())
-		return;
 
 	puts("Partitions:");
 	partitions = get_partitions();
@@ -363,7 +363,7 @@ void diagnostics() {
 #endif
 
 	puts("Bootable images:");
-	systems = scan_system();
+	systems = scan_system(dev_ignore);
 
 	EINA_LIST_FOREACH(systems, l, s) {
 		printf("kexec %s'%s' -l %s\n", KEXEC_CMDLINE,

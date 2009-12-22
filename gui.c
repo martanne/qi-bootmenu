@@ -81,13 +81,16 @@ static bool gui_init(){
 	return true;
 }
 
-int gui_show(int argc, char **argv) {
+int gui_show(int argc, char **argv, Eina_List *dev_ignore) {
 
-	if (argc > 1 && argv[1][0] == '-') {
-		int i;
-		for (i = 0; i < countof(guis); i++) {
-			if (argv[1][1] == guis[i].option)
-				gui = &guis[i];
+	int arg, g;
+
+	for (arg = 1; arg < argc; arg++) {
+		if (argv[arg][0] != '-')
+			continue;
+		for (g = 0; g < countof(guis); g++) {
+			if (argv[arg][1] == guis[g].option)
+				gui = &guis[g];
 		}
 	}
 
@@ -97,7 +100,7 @@ int gui_show(int argc, char **argv) {
 	}
 
 	/* search for system images to boot and display them */
-	gui->show(scan_system());
+	gui->show(scan_system(dev_ignore));
 
 	ecore_main_loop_begin();
 

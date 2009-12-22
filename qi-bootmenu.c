@@ -23,16 +23,42 @@
 
 #include "kexec.h"
 #include "gui.h"
+#include "util.h"
+
+static void usage() {
+	eprint("usage: qi-bootmenu [-d] [-i ...]\n");
+	exit(1);
+}
 
 int main(int argc, char **argv) {
 
-	if (argc > 1 && argv[1][0] == '-') {
-		switch (argv[1][1]) {
+	Eina_List *dev_ignore = NULL; /* partitions to ignore */
+	bool diag = false;
+	int arg;
+
+	if (!eina_init())
+		return 1;
+
+	for (arg = 1; arg < argc; arg++) {
+		if (argv[arg][0] != '-')
+			usage();
+			 
+		switch (argv[arg][1]) {
 			case 'd':
-				diagnostics();
-				exit(0);
+				diag = true;
+				break;
+			case 'i':
+				if (arg + 1 >= argc)
+					usage();
+				dev_ignore = eina_list_append(dev_ignore, argv[++arg]);
+				break;
 		}
 	}
 
-	return gui_show(argc, argv);
+	if (diag) {
+		diagnostics(dev_ignore);
+		exit(0);
+	}
+
+	return gui_show(argc, argv, dev_ignore);
 }

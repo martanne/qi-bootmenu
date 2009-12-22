@@ -9,7 +9,7 @@ typedef struct {
 	const char *logo;
 } BootItem;
 
-void diagnostics();
-Eina_List* scan_system();
+void diagnostics(Eina_List *dev_ignore);
+Eina_List* scan_system(Eina_List *dev_ignore); 
 char* get_kernel_cmdline(BootItem *i);
 bool boot_kernel(BootItem *i);
