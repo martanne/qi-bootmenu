@@ -21,8 +21,14 @@ qi-bootmenu: ${OBJ}
 	@echo CC -o $@
 	@${CC} -o $@ ${OBJ} ${LDFLAGS}
 
-debug: clean
+debug:
 	@make CFLAGS='${DEBUG_CFLAGS}'
+
+static:
+	LDFLAGS='${LDFLAGS_STATIC}' PKG_CONFIG_FLAGS='${PKG_CONFIG_STATIC_FLAGS}' make
+
+static_debug:
+	@make static CFLAGS='${DEBUG_CFLAGS}'
 
 clean:
 	@echo cleaning
@@ -50,4 +56,4 @@ uninstall:
 	@echo removing executable file from ${DESTDIR}${PREFIX}/sbin
 	@rm -f ${DESTDIR}${PREFIX}/sbin/qi-bootmenu
 
-.PHONY: all options clean dist install uninstall debug
+.PHONY: all options clean dist install uninstall debug static
