@@ -1,6 +1,3 @@
-#define GRID_LOGO_WIDTH 200
-#define GRID_LOGO_HEIGHT 180
-
 static void gui_grid_draw_item(const char *logo, void(*callback)(void*, Evas*, Evas_Object*, void *),
                                void *data, int x, int y) {
 
@@ -34,7 +31,7 @@ static void gui_grid(Eina_List *systems) {
 	EINA_LIST_FOREACH(systems, l, s) {
 		x = (i%2 == 0) ? 20 : 260;
 		y = 16 + ((SCREEN_HEIGHT/3) * (i/2));
-		gui_grid_draw_item(s->logo, bootitem_clicked, s, x, y);
+		gui_grid_draw_item(s->logo, gui_bootitem_clicked, s, x, y);
 		i++;
 	}
 

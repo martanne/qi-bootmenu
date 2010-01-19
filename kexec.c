@@ -1,16 +1,13 @@
 #include <errno.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <sys/fcntl.h>
+#include <ctype.h>
+#include <signal.h>
 #include <string.h>
 #include <asm/setup.h> /* for COMMAND_LINE_SIZE */
+#include <sys/fcntl.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <sys/utsname.h>
-#include <Eina.h>
-#include "config.h"
-#include "kexec.h"
-#include "util.h"
 #include "fstype/fstype.h"
 
 #ifndef COMMAND_LINE_SIZE
@@ -26,6 +23,63 @@ static Eina_List *partitions;
 /* systems which were found to boot */
 static Eina_List *systems;
 
+static void skip_until(char** str, char c) {
+	while (**str && **str != c)
+		(*str)++;
+}
+
+static void skip_spaces(char **str) {
+	while (isspace(**str))
+		(*str)++;
+}
+
+/* originated from kexecboot, it is used instead of system(3) because
+ * there is no shell involved which means it *could* be a bit faster
+ */
+
+static int fexecw(const char *path, char *const argv[], char *const envp[]) {
+	pid_t pid;
+	struct sigaction ignore, old_int, old_quit;
+	sigset_t masked, oldmask;
+	int status;
+
+	/* Block SIGCHLD and ignore SIGINT and SIGQUIT before forking
+	 * restore the original signal handlers afterwards. */
+
+	ignore.sa_handler = SIG_IGN;
+	sigemptyset(&ignore.sa_mask);
+	ignore.sa_flags = 0;
+	sigaction(SIGINT, &ignore, &old_int);
+	sigaction(SIGQUIT, &ignore, &old_quit);
+
+	sigemptyset(&masked);
+	sigaddset(&masked, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &masked, &oldmask);
+
+	pid = fork();
+
+	if (pid < 0)
+		return -1; /* can't fork */
+	else if (pid == 0) { /* child process */
+		sigaction(SIGINT, &old_int, NULL);
+		sigaction(SIGQUIT, &old_quit, NULL);
+		sigprocmask(SIG_SETMASK, &oldmask, NULL);
+		execve(path, (char *const *)argv, (char *const *)envp);
+		_exit(127);
+	}
+
+	/* wait for our child and store it's exit status */
+	waitpid(pid, &status, 0);
+
+	/* restore signal handlers */
+	sigaction(SIGINT, &old_int, NULL);
+	sigaction(SIGQUIT, &old_quit, NULL);
+	sigprocmask(SIG_SETMASK, &oldmask, NULL);
+
+	return status;
+}
+
+/* returns all partions known to the system with it's full paths */
 static Eina_List* get_partitions() {
 	FILE *f = fopen("/proc/partitions", "r");
 
@@ -96,7 +150,7 @@ static Eina_List* get_kernel_filesystems_builtin() {
 
 static Eina_List* get_kernel_filesystems_modules() {
 
-#ifdef CONFIG_SUPPORT_KERNEL_FS_MODULES
+#if CONFIG_SUPPORT_KERNEL_FS_MODULES
 
 	Eina_List *fs = NULL; 
 	struct utsname uts;
@@ -159,7 +213,7 @@ static bool is_supported_filesystem(const char *fs) {
 	if (eina_list_search_unsorted(fs_core, EINA_COMPARE_CB(strcmp), fs))
 		return true;
 
-#ifdef CONFIG_SUPPORT_KERNEL_FS_MODULES
+#if CONFIG_SUPPORT_KERNEL_FS_MODULES
 	const char *modprobe[] = { MODPROBE , fs };
 	if (eina_list_search_unsorted(fs_mods, EINA_COMPARE_CB(strcmp), fs) &&
 	    fexecw(modprobe[0], (char *const *)modprobe, NULL) == 0) {
@@ -173,7 +227,7 @@ static bool is_supported_filesystem(const char *fs) {
 	return false;
 }
 
-Eina_List* scan_system(Eina_List *dev_ignore) {
+static Eina_List* scan_system(Eina_List *dev_ignore) {
 
 	Eina_List *l;
 	const char *dev, *mnt, *fs;
@@ -280,7 +334,7 @@ Eina_List* scan_system(Eina_List *dev_ignore) {
  *  - append-$MACHINE in the same directory as the kernel
  */
 
-char* get_kernel_cmdline(BootItem *i) {
+static char* get_kernel_cmdline(BootItem *i) {
 	static char cmdline[2 * COMMAND_LINE_SIZE] = KEXEC_CMDLINE, *s = cmdline + sstrlen(KEXEC_CMDLINE);
 
 	/* read the cmdline of the currently running system only once */
@@ -302,7 +356,7 @@ char* get_kernel_cmdline(BootItem *i) {
 	return cmdline;
 }
 
-bool boot_kernel(BootItem *i) {
+static bool boot_kernel(BootItem *i) {
 	Eina_List *l;
 	BootItem *s;
 	
@@ -334,7 +388,7 @@ bool boot_kernel(BootItem *i) {
 	return true;
 }
 
-void diagnostics(Eina_List *dev_ignore) {
+static void diagnostics(Eina_List *dev_ignore) {
 	Eina_List *l;
 	BootItem *s;
 	char *p;
@@ -353,7 +407,7 @@ void diagnostics(Eina_List *dev_ignore) {
 		puts(p);
 	}
 
-#ifdef CONFIG_SUPPORT_KERNEL_FS_MODULES
+#if CONFIG_SUPPORT_KERNEL_FS_MODULES
 	puts("Filesystem modules:");
 	fs_mods = get_kernel_filesystems_modules();
  

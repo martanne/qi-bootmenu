@@ -1,8 +1,5 @@
-#define LIST_LOGO_WIDTH 100
-#define LIST_LOGO_HEIGHT 80
-
 static void gui_list_draw_item(const char *text, const char *logo, void(*callback)(void*, Evas*, Evas_Object*, void *),
-                      void *data, int x, int y) {
+                               void *data, int x, int y) {
 
 	Evas_Object *ebox, *elogo, *etext;
 
@@ -53,7 +50,7 @@ static void gui_list(Eina_List *systems) {
 	BootItem *s;
 
 	EINA_LIST_FOREACH(systems, l, s) {
-		gui_list_draw_item(s->dev, s->logo, bootitem_clicked, s, 0, y);
+		gui_list_draw_item(s->dev, s->logo, gui_bootitem_clicked, s, 0, y);
 		y += LIST_LOGO_HEIGHT;
 	}
 	/* add pre defined menu entries */
