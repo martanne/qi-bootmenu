@@ -1,6 +1,9 @@
 #define APPNAME "Qi Bootmenu"
 /* whether we should scan /lib/modules/`uname -r`/ for fs modules */
 #define CONFIG_SUPPORT_KERNEL_FS_MODULES 0
+/* used to locate kernel ({u,z}Image-$MACHINE.bin) and append file (append-$MACHINE)
+ * can be overriden on the command line -m */ 
+#define DEFAULT_MACHINE "GTA02"
 /* partitions will be mounted under $MOUNTPOINT/$PARTITION */
 #define MOUNTPOINT "/mnt"
 /* binaries to exec(3) */

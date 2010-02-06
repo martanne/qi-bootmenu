@@ -84,12 +84,13 @@ static void eprint(const char *errstr, ...) {
 }
 
 static void usage() {
-	eprint("usage: qi-bootmenu [-d] [-i ...]\n");
+	eprint("usage: qi-bootmenu [-d] [-m ...] [-i ...]\n");
 	exit(1);
 }
 
 int main(int argc, char **argv) {
 
+	const char *machine = DEFAULT_MACHINE;
 	Eina_List *dev_ignore = NULL; /* partitions to ignore */
 	bool diag = false;
 	int arg;
@@ -106,6 +107,10 @@ int main(int argc, char **argv) {
 			case 'd':
 				diag = true;
 				break;
+			case 'm':
+				if (arg + 1 >= argc)
+					usage();
+				machine = argv[++arg];
 			case 'i':
 				if (arg + 1 >= argc)
 					usage();
@@ -121,7 +126,7 @@ int main(int argc, char **argv) {
 	}
 
 	if (diag) {
-		diagnostics(dev_ignore);
+		diagnostics(dev_ignore, machine);
 		return 0;
 	}
 
@@ -131,7 +136,7 @@ int main(int argc, char **argv) {
 	}
 
 	/* search for system images to boot and display them */
-	gui->show(scan_system(dev_ignore));
+	gui->show(scan_system(dev_ignore, machine));
 
 	debug("entering main loop\n");
 

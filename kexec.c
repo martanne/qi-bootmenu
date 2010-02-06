@@ -227,7 +227,7 @@ static bool is_supported_filesystem(const char *fs) {
 	return false;
 }
 
-static Eina_List* scan_system(Eina_List *dev_ignore) {
+static Eina_List* scan_system(Eina_List *dev_ignore, const char *machine) {
 
 	Eina_List *l;
 	const char *dev, *mnt, *fs;
@@ -286,8 +286,7 @@ static Eina_List* scan_system(Eina_List *dev_ignore) {
 			goto next;
 		}
 
-		/* XXX: replace fixed GTA02 with machine type */
-		snprintf(buf, sizeof buf, "%s/%s/boot/uImage-GTA02.bin", MOUNTPOINT, mnt);
+		snprintf(buf, sizeof buf, "%s/%s/boot/uImage-%s.bin", MOUNTPOINT, mnt, machine);
 		if (stat(buf, &st)) {
 			/* no uImage present now check for zImage */
 			buf[sstrlen(MOUNTPOINT) + sstrlen("/") + strlen(mnt) + sstrlen("/boot/")] = 'z';
@@ -303,8 +302,7 @@ static Eina_List* scan_system(Eina_List *dev_ignore) {
 		sys->dev = dev;
 		sys->kernel = strdup(buf);
 		
-		/* XXX: replace fixed GTA02 with machine type */
-		snprintf(buf, sizeof buf, "%s/%s/boot/append-GTA02", MOUNTPOINT, mnt);
+		snprintf(buf, sizeof buf, "%s/%s/boot/append-%s", MOUNTPOINT, mnt, machine);
 		FILE *f = fopen(buf, "r");
 		if (f) {
 			fgets(buf, sizeof buf, f);
@@ -388,7 +386,7 @@ static bool boot_kernel(BootItem *i) {
 	return true;
 }
 
-static void diagnostics(Eina_List *dev_ignore) {
+static void diagnostics(Eina_List *dev_ignore, const char *machine) {
 	Eina_List *l;
 	BootItem *s;
 	char *p;
@@ -417,7 +415,7 @@ static void diagnostics(Eina_List *dev_ignore) {
 #endif
 
 	puts("Bootable images:");
-	systems = scan_system(dev_ignore);
+	systems = scan_system(dev_ignore, machine);
 
 	EINA_LIST_FOREACH(systems, l, s) {
 		printf("kexec %s'%s' -l %s\n", KEXEC_CMDLINE,
