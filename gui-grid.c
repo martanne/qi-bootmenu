@@ -25,7 +25,7 @@ static void gui_grid(Eina_List *systems) {
 	evas_object_show(eline);
 
 	Eina_List *l;
-	int i = 0, x, y;
+	unsigned int i = 0, x, y;
 	BootItem *s;
 
 	EINA_LIST_FOREACH(systems, l, s) {

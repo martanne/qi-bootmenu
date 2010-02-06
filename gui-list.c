@@ -46,7 +46,7 @@ static void gui_list_select_item(Evas_Object *item) {
 
 static void gui_list(Eina_List *systems) {
 	Eina_List *l;
-	int i, y = 0;
+	unsigned int i, y = 0;
 	BootItem *s;
 
 	EINA_LIST_FOREACH(systems, l, s) {

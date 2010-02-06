@@ -92,7 +92,8 @@ int main(int argc, char **argv) {
 
 	Eina_List *dev_ignore = NULL; /* partitions to ignore */
 	bool diag = false;
-	int arg, g;
+	int arg;
+	unsigned int g;
 
 	if (!eina_init())
 		return 1;
