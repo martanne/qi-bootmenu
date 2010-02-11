@@ -38,6 +38,8 @@ static void eprint(const char *errstr, ...);
  #define debug eprint
 #endif
 
+#define RGB(r, g, b) r,g,b
+
 typedef struct {
 	const char *fs;
 	const char *dev;

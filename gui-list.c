@@ -12,6 +12,7 @@ static void gui_list_draw_item(const char *text, const char *logo, void(*callbac
 	etext = evas_object_text_add(evas);
 	evas_object_text_font_set(etext, FONT, FONT_SIZE);
 	evas_object_text_text_set(etext, text);
+	evas_object_color_set(etext, LIST_FONT_COLOR, 255);
 	evas_object_show(etext);
 
 	ebox = evas_object_box_add(evas);
@@ -22,26 +23,14 @@ static void gui_list_draw_item(const char *text, const char *logo, void(*callbac
 	evas_object_box_append(ebox, elogo);
 	evas_object_box_append(ebox, etext);
 	evas_object_event_callback_add(ebox, EVAS_CALLBACK_MOUSE_UP, callback, data);
+	evas_object_data_set(ebox, "text", etext);
 
 	evas_object_show(ebox);
 }
 
-static void gui_list_select_item(Evas_Object *item) {
-	Evas_Object *eline; 
-	Evas_Coord x, y, w, h;
-	evas_object_geometry_get(item, &x, &y, &w, &h);
-	eline = evas_object_line_add(evas);
-	evas_object_line_xy_set(eline, x, y, x+w, y);
-	evas_object_show(eline);
-	eline = evas_object_line_add(evas);
-	evas_object_line_xy_set(eline, x, y, x, y+h);
-	evas_object_show(eline);
-	eline = evas_object_line_add(evas);
-	evas_object_line_xy_set(eline, x+w, y, x+w, y+h);
-	evas_object_show(eline);
-	eline = evas_object_line_add(evas);
-	evas_object_line_xy_set(eline, x, y+h, x+w, y+h);
-	evas_object_show(eline);
+static void gui_list_select_item(Evas_Object *box) {
+	Evas_Object *text = evas_object_data_get(box, "text");
+	evas_object_color_set(text, LIST_FONT_SELECTED_COLOR, 255);
 }
 
 static void gui_list(Eina_List *systems) {

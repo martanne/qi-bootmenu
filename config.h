@@ -25,6 +25,8 @@ MenuItem menu[] = {
 	{ "Power Off", "/usr/share/qi-bootmenu/poweroff.png", poweroff },
 };
 
+#define LIST_FONT_COLOR RGB(255, 255, 255)
+#define LIST_FONT_SELECTED_COLOR RGB(255, 102, 0)
 #define LIST_LOGO_WIDTH 100
 #define LIST_LOGO_HEIGHT 80
 
