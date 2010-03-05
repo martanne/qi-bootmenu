@@ -113,6 +113,7 @@ int main(int argc, char **argv) {
 				if (arg + 1 >= argc)
 					usage();
 				machine = argv[++arg];
+				break;
 			case 'i':
 				if (arg + 1 >= argc)
 					usage();
