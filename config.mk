@@ -20,7 +20,6 @@ LIBS = -lc -leina $(shell pkg-config ${PKG_CONFIG_FLAGS} --libs eina-0 evas ecor
 # XXX: -std=c99 
 
 CFLAGS += -Wall -Os ${INCS} -DVERSION=\"${VERSION}\" -DNDEBUG
-LDFLAGS += ${LIBS}
 
 DEBUG_CFLAGS = ${CFLAGS} -UNDEBUG -O0 -g -ggdb -Wall
 

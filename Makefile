@@ -19,13 +19,13 @@ ${OBJ}: config.h config.mk
 
 qi-bootmenu: ${OBJ}
 	@echo CC -o $@
-	@${CC} -o $@ ${OBJ} ${LDFLAGS}
+	@${CC} ${LDFLAGS} ${LIBS} ${OBJ} -o $@
 
 debug:
 	@make CFLAGS='${DEBUG_CFLAGS}'
 
 static:
-	LDFLAGS='${LDFLAGS_STATIC}' PKG_CONFIG_FLAGS='${PKG_CONFIG_STATIC_FLAGS}' make
+	LDFLAGS='${LDFLAGS_STATIC} ${LDFLAGS}' PKG_CONFIG_FLAGS='${PKG_CONFIG_STATIC_FLAGS}' make
 
 static_debug:
 	@make static CFLAGS='${DEBUG_CFLAGS}'
