@@ -399,15 +399,15 @@ static void diagnostics(Eina_List *dev_ignore) {
 	BootItem *s;
 	char *p;
 
+	systems = scan_system(dev_ignore);
+
 	puts("Partitions:");
-	partitions = get_partitions();
 
 	EINA_LIST_FOREACH(partitions, l, p) {
 		puts(p);
 	}
 
 	puts("Built in filesystems:");
-	fs_core = get_kernel_filesystems_builtin();
 
 	EINA_LIST_FOREACH(fs_core, l, p) {
 		puts(p);
@@ -415,7 +415,6 @@ static void diagnostics(Eina_List *dev_ignore) {
 
 #if CONFIG_SUPPORT_KERNEL_FS_MODULES
 	puts("Filesystem modules:");
-	fs_mods = get_kernel_filesystems_modules();
  
 	EINA_LIST_FOREACH(fs_mods, l, p) {
 		puts(p);
@@ -423,12 +422,14 @@ static void diagnostics(Eina_List *dev_ignore) {
 #endif
 
 	puts("Bootable images:");
-	systems = scan_system(dev_ignore);
 
 	EINA_LIST_FOREACH(systems, l, s) {
+		printf("mount -t %s %s /mnt/%s\n", s->fs, s->dev, s->dev + sstrlen("/dev/")); 
 		printf("kexec %s'%s' -l %s\n", KEXEC_CMDLINE,
 		       get_kernel_cmdline(s) + sstrlen(KEXEC_CMDLINE), s->kernel);
-		printf("umount '%s'\n", s->dev);
+		printf("umount %s\n", s->dev);
 		printf("kexec -e\n\n");
+		/* XXX: assumes we are still chdir()-ed */
+		umount(s->dev + sstrlen("/dev/"));
 	}
 }
