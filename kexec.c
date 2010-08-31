@@ -227,12 +227,79 @@ static bool is_supported_filesystem(const char *fs) {
 	return false;
 }
 
-static Eina_List* scan_system(Eina_List *dev_ignore, const char *machine) {
-
-	Eina_List *l;
-	const char *dev, *mnt, *fs;
+static BootItem* scan_partition(const char *dev) {
+	BootItem *sys = NULL;
+	const char *mnt, *fs;
 	char buf[COMMAND_LINE_SIZE];
 	struct stat st;
+
+	int fd = open(dev, O_RDONLY);
+	if (fd < 0) {
+		perror("open");
+		return NULL;
+	}
+	
+	if (identify_fs(fd, &fs, NULL, 0)) {
+		eprint("Couldn't identify filesystem on '%s'\n", dev);
+		goto out;
+	}
+
+	if (!is_supported_filesystem(fs)) {
+		eprint("Unsupported filesystem '%s' on '%s'\n", fs, dev);
+		goto out;
+	}
+
+	/* we chdir()-ed and now use relative paths */ 
+	mnt = dev + sstrlen("/dev/");
+	if (mkdir(mnt, 0755) && errno != EEXIST) {
+		perror("mkdir");
+		goto out;
+	}
+
+	if (mount(dev, mnt, fs, MS_RDONLY, NULL)) { 
+		perror("mount");
+		goto out;
+	}
+
+	snprintf(buf, sizeof buf, "%s/%s/boot/uImage-%s.bin", MOUNTPOINT, mnt, machine);
+	if (stat(buf, &st)) {
+		/* no uImage present now check for zImage */
+		buf[sstrlen(MOUNTPOINT) + sstrlen("/") + strlen(mnt) + sstrlen("/boot/")] = 'z';
+		if (stat(buf, &st)) {
+			eprint("No kernel found at '%s'\n", buf);
+			umount(mnt);
+			goto out;
+		}
+	}
+
+	sys = calloc(sizeof(BootItem), 1);
+	sys->fs = fs;
+	sys->dev = dev;
+	sys->kernel = strdup(buf);
+		
+	snprintf(buf, sizeof buf, "%s/%s/boot/append-%s", MOUNTPOINT, mnt, machine);
+	FILE *f = fopen(buf, "r");
+	if (f) {
+		fgets(buf, sizeof buf, f);
+		sys->cmdline = strdup(buf);
+		fclose(f);
+	}
+
+	snprintf(buf, sizeof buf, "%s/%s/boot/bootlogo.png", MOUNTPOINT, mnt);
+	if (!stat(buf, &st))
+		sys->logo = strdup(buf);
+	else
+		sys->logo = DEFAULT_LOGO;
+
+out:
+	close(fd);
+	return sys;
+}
+
+static Eina_List* scan_system(Eina_List *dev_ignore) {
+
+	Eina_List *l;
+	const char *dev;
 
 	if (systems)
 		return systems;
@@ -257,73 +324,14 @@ static Eina_List* scan_system(Eina_List *dev_ignore, const char *machine) {
 
 		if (eina_list_search_unsorted(dev_ignore, EINA_COMPARE_CB(strcmp), dev))
 			continue;
-	
-		int fd = open(dev, O_RDONLY);
-		if (fd < 0) {
-			perror("open");
-			continue;
-		}
-	
-		if (identify_fs(fd, &fs, NULL, 0)) {
-			eprint("Couldn't identify filesystem on '%s'\n", dev);
-			goto next;
-		}
-
-		if (!is_supported_filesystem(fs)) {
-			eprint("Unsupported filesystem '%s' on '%s'\n", fs, dev);
-			goto next;
-		}
-
-		/* we chdir()-ed and now use relative paths */ 
-		mnt = dev + sstrlen("/dev/");
-		if (mkdir(mnt, 0755) && errno != EEXIST) {
-			perror("mkdir");
-			goto next;
-		}
-
-		if (mount(dev, mnt, fs, MS_RDONLY, NULL)) { 
-			perror("mount");
-			goto next;
-		}
-
-		snprintf(buf, sizeof buf, "%s/%s/boot/uImage-%s.bin", MOUNTPOINT, mnt, machine);
-		if (stat(buf, &st)) {
-			/* no uImage present now check for zImage */
-			buf[sstrlen(MOUNTPOINT) + sstrlen("/") + strlen(mnt) + sstrlen("/boot/")] = 'z';
-			if (stat(buf, &st)) {
-				eprint("No kernel found at '%s'\n", buf);
-				umount(mnt);
-				goto next;
-			}
-		}
-
-		BootItem *sys = calloc(sizeof(BootItem), 1);
-		sys->fs = fs;
-		sys->dev = dev;
-		sys->kernel = strdup(buf);
-		
-		snprintf(buf, sizeof buf, "%s/%s/boot/append-%s", MOUNTPOINT, mnt, machine);
-		FILE *f = fopen(buf, "r");
-		if (f) {
-			fgets(buf, sizeof buf, f);
-			sys->cmdline = strdup(buf);
-			fclose(f);
-		}
-
-		snprintf(buf, sizeof buf, "%s/%s/boot/bootlogo.png", MOUNTPOINT, mnt);
-		if (!stat(buf, &st))
-			sys->logo = strdup(buf);
-		else
-			sys->logo = DEFAULT_LOGO;
-
-		systems = eina_list_append(systems, sys);
-		
-	next:
-		close(fd);
+		BootItem *sys = scan_partition(dev);
+		if (sys)
+			systems = eina_list_append(systems, sys);
 	}
 
 	return systems;
 } 
+
 
 /* Genereate kernel command line for use with kexec. It consist of the following:
  * 
@@ -368,7 +376,7 @@ static bool boot_kernel(BootItem *i) {
 
 	const char *kexec_load[] = { KEXEC, get_kernel_cmdline(i), "-l", i->kernel, NULL };
 	if (fexecw(kexec_load[0], (char *const *)kexec_load, NULL)) {
-		eprint("Couldn't load kernel from '%s'\n", i->kernel);
+		gui_show_error("Couldn't load kernel from '%s'\n", i->kernel);
 		return false;
 	}
 
@@ -378,7 +386,7 @@ static bool boot_kernel(BootItem *i) {
 	umount(i->dev + sstrlen("/dev/"));
 
 	if (execve(kexec_exec[0], (char *const *)kexec_exec, NULL)) {
-		eprint("Couldn't exec kernel '%s'\n", i->kernel);
+		gui_show_error("Couldn't exec kernel '%s'\n", i->kernel);
 		return false;
 	}
 
@@ -386,7 +394,7 @@ static bool boot_kernel(BootItem *i) {
 	return true;
 }
 
-static void diagnostics(Eina_List *dev_ignore, const char *machine) {
+static void diagnostics(Eina_List *dev_ignore) {
 	Eina_List *l;
 	BootItem *s;
 	char *p;
@@ -415,7 +423,7 @@ static void diagnostics(Eina_List *dev_ignore, const char *machine) {
 #endif
 
 	puts("Bootable images:");
-	systems = scan_system(dev_ignore, machine);
+	systems = scan_system(dev_ignore);
 
 	EINA_LIST_FOREACH(systems, l, s) {
 		printf("kexec %s'%s' -l %s\n", KEXEC_CMDLINE,

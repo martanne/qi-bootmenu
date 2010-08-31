@@ -38,6 +38,6 @@ static void gui_grid(Eina_List *systems) {
 	for (i = 0; i < countof(menu); i++) {
 		x = ((5-i)%2 == 0) ? 20 : 260;
 		y = 16 + ((SCREEN_HEIGHT/3) * ((5-i)/2));
-		gui_grid_draw_item(menu[i].logo, menu[i].callback, NULL, x, y);
+		gui_grid_draw_item(menu[i].logo, menu[i].callback, menu[i].data, x, y);
 	}
 }

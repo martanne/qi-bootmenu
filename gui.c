@@ -1,7 +1,33 @@
+static void gui_show_error(const char *errstr, ...) {
+	va_list ap;
+
+	va_start(ap, errstr);
+
+	if (gui->error)
+		gui->error(errstr, ap);
+
+	vfprintf(stderr, errstr, ap);
+	va_end(ap);
+}
+
 static void poweroff(void *data, Evas *evas, Evas_Object *item, void *event) {
 	if (gui->select)
 		gui->select(item);
 	system("poweroff");
+}
+
+static void boot_nand(void *data, Evas *evas, Evas_Object *item, void *event) {
+
+	if (gui->select)
+		gui->select(item);
+
+	BootItem *nand = scan_partition((const char *)data);
+	if (!nand) {
+		gui_show_error("No kernel found in NAND Flash.\n");
+		return;
+	}
+
+	boot_kernel(nand);
 }
 
 static void gui_bootitem_clicked(void *data, Evas *evas, Evas_Object *item, void *event) {

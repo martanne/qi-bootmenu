@@ -21,8 +21,10 @@
 #define SCREEN_HEIGHT 640
 
 /* static menu entries */
+
 MenuItem menu[] = {
-	{ "Power Off", "/usr/share/qi-bootmenu/poweroff.png", poweroff },
+	{ "NAND Flash", DEFAULT_LOGO, boot_nand, "/dev/mtdblock6" },
+	{ "Power Off", "/usr/share/qi-bootmenu/poweroff.png", poweroff, NULL },
 };
 
 #define LIST_FONT_COLOR RGB(255, 255, 255)
@@ -37,6 +39,6 @@ MenuItem menu[] = {
 #include "gui-grid.c"
 
 Gui guis[] = {
-	{ 'l', gui_list, gui_list_select_item },
-	{ 'g', gui_grid, NULL },
+	{ 'l', gui_list, gui_list_select_item, gui_list_show_error },
+	{ 'g', gui_grid, NULL, NULL },
 };

@@ -22,6 +22,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <Eina.h>
 #include <Evas.h>
 #include <Ecore.h>
@@ -52,9 +53,11 @@ typedef struct {
 	const char *text;
 	const char *logo;
 	void(*callback)(void*, Evas*, Evas_Object*, void *);
+	void *data;
 } MenuItem;
 
 /* menu actions */
+static void boot_nand(void *data, Evas *evas, Evas_Object *obj, void *event);
 static void poweroff(void *data, Evas *evas, Evas_Object *obj, void *event);
 
 /* drawing related stuff */
@@ -65,12 +68,17 @@ typedef struct {
 	char option;
 	void(*show)(Eina_List *systems);
 	void(*select)(Evas_Object *item);
+	void(*error)(const char *errstr, va_list ap); 
 } Gui;
 
 /* functions available to gui modules */
 static void gui_bootitem_clicked(void *data, Evas *evas, Evas_Object *item, void *event); 
+static void gui_show_error(const char *errstr, ...); 
 
 #include "config.h"
+
+/* will be used to search the kernel as in {u,z}Image-$MACHINE.bin */
+static const char *machine = DEFAULT_MACHINE;
 
 /* if no option is passed in then use the first entry */
 static Gui *gui = &guis[0];
@@ -92,7 +100,6 @@ static void usage() {
 
 int main(int argc, char **argv) {
 
-	const char *machine = DEFAULT_MACHINE;
 	Eina_List *dev_ignore = NULL; /* partitions to ignore */
 	bool diag = false;
 	int arg;
@@ -129,7 +136,8 @@ int main(int argc, char **argv) {
 	}
 
 	if (diag) {
-		diagnostics(dev_ignore, machine);
+		gui->error = NULL;
+		diagnostics(dev_ignore);
 		return 0;
 	}
 
@@ -139,7 +147,7 @@ int main(int argc, char **argv) {
 	}
 
 	/* search for system images to boot and display them */
-	gui->show(scan_system(dev_ignore, machine));
+	gui->show(scan_system(dev_ignore));
 
 	debug("entering main loop\n");
 
