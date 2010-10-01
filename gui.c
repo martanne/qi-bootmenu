@@ -11,8 +11,15 @@ static void gui_show_error(const char *errstr, ...) {
 }
 
 static void poweroff(void *data, Evas *evas, Evas_Object *item, void *event) {
+	Eina_List *l;
+	BootItem *s;
+
 	if (gui->select)
 		gui->select(item);
+
+	EINA_LIST_FOREACH(systems, l, s) {
+		umount(s->dev + sstrlen("/dev/"));
+	}
 	system("poweroff");
 }
 
