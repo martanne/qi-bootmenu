@@ -8,7 +8,7 @@ all: clean options qi-bootmenu
 options:
 	@echo qi-bootmenu build options:
 	@echo "CFLAGS   = ${CFLAGS}"
-	@echo "LDFLAGS  = ${LDFLAGS}"
+	@echo "LDFLAGS  = ${LDFLAGS} ${LIBS}"
 	@echo "CC       = ${CC}"
 
 .c.o:
