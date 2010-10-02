@@ -66,7 +66,7 @@ static Evas *evas;
 
 typedef struct {
 	char option;
-	void(*show)(Eina_List *systems);
+	void(*add)(MenuItem *item);
 	void(*select)(Evas_Object *item);
 	void(*deselect)(Evas_Object *item);
 	void(*error)(const char *errstr, va_list ap); 
@@ -101,10 +101,11 @@ static void usage() {
 
 int main(int argc, char **argv) {
 
-	Eina_List *dev_ignore = NULL; /* partitions to ignore */
+	BootItem *s;
+	Eina_List *l, *systems, *dev_ignore = NULL; /* partitions to ignore */
 	bool diag = false;
 	int arg;
-	unsigned int g;
+	unsigned int i;
 
 	if (!eina_init())
 		return 1;
@@ -128,9 +129,9 @@ int main(int argc, char **argv) {
 				dev_ignore = eina_list_append(dev_ignore, argv[++arg]);
 				break;
 			default:
-				for (g = 0; g < countof(guis); g++) {
-					if (argv[arg][1] == guis[g].option)
-						gui = &guis[g];
+				for (i = 0; i < countof(guis); i++) {
+					if (argv[arg][1] == guis[i].option)
+						gui = &guis[i];
 				}
 				break;
 		}
@@ -148,9 +149,30 @@ int main(int argc, char **argv) {
 	}
 
 	/* search for system images to boot and display them */
-	gui->show(scan_system(dev_ignore));
+	systems = scan_system(dev_ignore);
 
-	debug("entering main loop\n");
+	EINA_LIST_FOREACH(systems, l, s) {
+		for (i = 0; i < countof(menu); i++) {
+			if (!strcmp(menu[i].data, s->dev)) {
+				menu[i].text = NULL;
+				break;
+			}
+		}
+		MenuItem item = {
+			.text = s->dev,
+			.logo = s->logo,
+			.callback = gui_bootitem_clicked,
+			.data = s,
+		};
+		gui->add(&item);
+	}
+
+	/* add pre defined menu entries */
+	for (i = 0; i < countof(menu); i++) {
+		if (!menu[i].text)
+			continue;
+		gui->add(&menu[i]);
+	}
 
 	ecore_main_loop_begin();
 

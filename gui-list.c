@@ -70,22 +70,8 @@ static void gui_list_show_error(const char *errstr, va_list ap) {
 	evas_object_show(etext);
 }
 
-static void gui_list(Eina_List *systems) {
-	Eina_List *l;
-	unsigned int i, y = 0;
-	BootItem *s;
-
-	EINA_LIST_FOREACH(systems, l, s) {
-		if (!strcmp(menu[0].data, s->dev))
-			menu[0].text = NULL;
-		gui_list_draw_item(s->dev, s->logo, gui_bootitem_clicked, s, 0, y);
-		y += LIST_LOGO_HEIGHT;
-	}
-	/* add pre defined menu entries */
-	for (i = 0; i < countof(menu); i++) {
-		if (!menu[i].text)
-			continue;
-		gui_list_draw_item(menu[i].text, menu[i].logo, menu[i].callback, menu[i].data, 0, y);
-		y += LIST_LOGO_HEIGHT;
-	}
+static void gui_list_add_item(MenuItem *item) {
+	static unsigned int y;
+	gui_list_draw_item(item->text, item->logo, item->callback, item->data, 0, y);
+	y += LIST_LOGO_HEIGHT;
 }

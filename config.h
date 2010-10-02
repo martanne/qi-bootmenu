@@ -38,5 +38,5 @@ MenuItem menu[] = {
 #include "gui-list.c"
 
 Gui guis[] = {
-	{ 'l', gui_list, gui_list_select_item, gui_list_deselect_item, gui_list_show_error },
+	{ 'l', gui_list_add_item, gui_list_select_item, gui_list_deselect_item, gui_list_show_error },
 };
