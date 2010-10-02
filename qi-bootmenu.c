@@ -120,6 +120,8 @@ int main(int argc, char **argv) {
 			usage();
 			 
 		switch (argv[arg][1]) {
+			case 'h':
+				usage();
 			case 'd':
 				diag = true;
 				break;
