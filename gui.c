@@ -20,12 +20,7 @@ static void gui_item_clicked(void *data, Evas *evas, Evas_Object *item, void *ev
 }
 
 static void poweroff(void *data) {
-	Eina_List *l;
-	BootItem *s;
-
-	EINA_LIST_FOREACH(systems, l, s) {
-		umount(s->dev + sstrlen("/dev/"));
-	}
+	umount_all();
 	system("poweroff");
 }
 

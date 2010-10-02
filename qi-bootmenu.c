@@ -87,6 +87,11 @@ static Gui *gui = &guis[0];
 #include "kexec.c"
 #include "gui.c"
 
+static void cleanup(int sig) {
+	umount_all();
+	ecore_main_loop_quit();
+}
+
 static void eprint(const char *errstr, ...) {
 	va_list ap;
 	va_start(ap, errstr);
@@ -150,6 +155,8 @@ int main(int argc, char **argv) {
 
 	/* search for system images to boot and display them */
 	systems = scan_system(dev_ignore);
+	signal(SIGINT, cleanup);
+	signal(SIGTERM, cleanup);
 
 	EINA_LIST_FOREACH(systems, l, s) {
 		for (i = 0; i < countof(menu); i++) {

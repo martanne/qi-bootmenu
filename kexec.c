@@ -433,3 +433,12 @@ static void diagnostics(Eina_List *dev_ignore) {
 		umount(s->dev + sstrlen("/dev/"));
 	}
 }
+
+static void umount_all() {
+	Eina_List *l;
+	BootItem *s;
+
+	EINA_LIST_FOREACH(systems, l, s) {
+		umount(s->dev + sstrlen("/dev/"));
+	}
+}
