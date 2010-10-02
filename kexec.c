@@ -376,7 +376,7 @@ static bool boot_kernel(BootItem *i) {
 
 	const char *kexec_load[] = { KEXEC, get_kernel_cmdline(i), "-l", i->kernel, NULL };
 	if (fexecw(kexec_load[0], (char *const *)kexec_load, NULL)) {
-		gui_show_error("Couldn't load kernel from '%s'\n", i->kernel);
+		gui_show_error("Couldn't load kernel from '%s'", i->kernel);
 		return false;
 	}
 
@@ -386,7 +386,7 @@ static bool boot_kernel(BootItem *i) {
 	umount(i->dev + sstrlen("/dev/"));
 
 	if (execve(kexec_exec[0], (char *const *)kexec_exec, NULL)) {
-		gui_show_error("Couldn't exec kernel '%s'\n", i->kernel);
+		gui_show_error("Couldn't exec kernel '%s'", i->kernel);
 		return false;
 	}
 

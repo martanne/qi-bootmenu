@@ -7,6 +7,7 @@ static void gui_show_error(const char *errstr, ...) {
 		gui->error(errstr, ap);
 
 	vfprintf(stderr, errstr, ap);
+	fprintf(stderr, "\n");
 	va_end(ap);
 }
 
@@ -27,7 +28,7 @@ static void poweroff(void *data) {
 static void boot_nand(void *data) {
 	BootItem *nand = scan_partition((const char *)data);
 	if (!nand) {
-		gui_show_error("No kernel found in NAND Flash.\n");
+		gui_show_error("No kernel found in NAND Flash");
 		return;
 	}
 
