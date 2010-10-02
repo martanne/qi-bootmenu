@@ -10,31 +10,42 @@ static void gui_show_error(const char *errstr, ...) {
 	va_end(ap);
 }
 
+static void gui_select_item(Evas_Object *item) {
+	if (gui->select)
+		gui->select(item);
+}
+
+static void gui_deselect_item(Evas_Object *item) {
+	if (gui->deselect)
+		gui->deselect(item);
+}
+
 static void poweroff(void *data, Evas *evas, Evas_Object *item, void *event) {
 	Eina_List *l;
 	BootItem *s;
 
-	if (gui->select)
-		gui->select(item);
+	gui_select_item(item);
 
 	EINA_LIST_FOREACH(systems, l, s) {
 		umount(s->dev + sstrlen("/dev/"));
 	}
 	system("poweroff");
+	gui_deselect_item(item);
 }
 
 static void boot_nand(void *data, Evas *evas, Evas_Object *item, void *event) {
 
-	if (gui->select)
-		gui->select(item);
+	gui_select_item(item);
 
 	BootItem *nand = scan_partition((const char *)data);
 	if (!nand) {
 		gui_show_error("No kernel found in NAND Flash.\n");
-		return;
+		goto out;
 	}
 
 	boot_kernel(nand);
+out:
+	gui_deselect_item(item);
 }
 
 static void gui_bootitem_clicked(void *data, Evas *evas, Evas_Object *item, void *event) {

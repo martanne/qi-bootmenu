@@ -68,6 +68,7 @@ typedef struct {
 	char option;
 	void(*show)(Eina_List *systems);
 	void(*select)(Evas_Object *item);
+	void(*deselect)(Evas_Object *item);
 	void(*error)(const char *errstr, va_list ap); 
 } Gui;
 

@@ -39,6 +39,6 @@ MenuItem menu[] = {
 #include "gui-grid.c"
 
 Gui guis[] = {
-	{ 'l', gui_list, gui_list_select_item, gui_list_show_error },
-	{ 'g', gui_grid, NULL, NULL },
+	{ 'l', gui_list, gui_list_select_item, gui_list_deselect_item, gui_list_show_error },
+	{ 'g', gui_grid, NULL, NULL, NULL },
 };

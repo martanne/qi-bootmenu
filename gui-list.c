@@ -40,6 +40,11 @@ static void gui_list_select_item(Evas_Object *box) {
 	evas_object_color_set(text, LIST_FONT_SELECTED_COLOR, 255);
 }
 
+static void gui_list_deselect_item(Evas_Object *box) {
+	Evas_Object *text = evas_object_data_get(box, "text");
+	evas_object_color_set(text, LIST_FONT_COLOR, 255);
+}
+
 static void gui_list_show_error(const char *errstr, va_list ap) {
 	static Evas_Object *etext;
 	char buf[128];
