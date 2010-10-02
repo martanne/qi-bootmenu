@@ -72,6 +72,6 @@ static void gui_list_show_error(const char *errstr, va_list ap) {
 
 static void gui_list_add_item(MenuItem *item) {
 	static unsigned int y;
-	gui_list_draw_item(item->text, item->logo, item->callback, item->data, 0, y);
+	gui_list_draw_item(item->text, item->logo, gui_item_clicked, item, 0, y);
 	y += LIST_LOGO_HEIGHT;
 }

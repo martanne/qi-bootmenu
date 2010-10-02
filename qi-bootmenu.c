@@ -52,13 +52,13 @@ typedef struct {
 typedef struct {
 	const char *text;
 	const char *logo;
-	void(*callback)(void*, Evas*, Evas_Object*, void *);
+	void(*callback)(void *data);
 	void *data;
 } MenuItem;
 
 /* menu actions */
-static void boot_nand(void *data, Evas *evas, Evas_Object *obj, void *event);
-static void poweroff(void *data, Evas *evas, Evas_Object *obj, void *event);
+static void boot_nand(void *data);
+static void poweroff(void *data);
 
 /* drawing related stuff */
 static Ecore_Evas *ee;
@@ -73,7 +73,7 @@ typedef struct {
 } Gui;
 
 /* functions available to gui modules */
-static void gui_bootitem_clicked(void *data, Evas *evas, Evas_Object *item, void *event); 
+static void gui_item_clicked(void *data, Evas *evas, Evas_Object *item, void *event); 
 static void gui_show_error(const char *errstr, ...); 
 
 #include "config.h"
@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
 
 	EINA_LIST_FOREACH(systems, l, s) {
 		for (i = 0; i < countof(menu); i++) {
-			if (!strcmp(menu[i].data, s->dev)) {
+			if (menu[i].data && !strcmp(menu[i].data, s->dev)) {
 				menu[i].text = NULL;
 				break;
 			}
