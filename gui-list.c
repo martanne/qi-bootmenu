@@ -1,7 +1,7 @@
 static void gui_list_draw_item(const char *text, const char *logo, void(*callback)(void*, Evas*, Evas_Object*, void *),
                                void *data, int x, int y) {
 
-	Evas_Object *ebox, *elogo, *etext;
+	Evas_Object *ebox, *elogo, *etext, *erect;
 
 	elogo = evas_object_image_add(evas);
 	evas_object_image_file_set(elogo, logo, NULL);
@@ -22,9 +22,16 @@ static void gui_list_draw_item(const char *text, const char *logo, void(*callbac
 	evas_object_resize(ebox, SCREEN_WIDTH, LIST_LOGO_HEIGHT);
 	evas_object_box_append(ebox, elogo);
 	evas_object_box_append(ebox, etext);
-	evas_object_event_callback_add(ebox, EVAS_CALLBACK_MOUSE_UP, callback, data);
-	evas_object_data_set(ebox, "text", etext);
 
+	/* this is just an invisible rect to catch all mouse down events in the area */
+	erect = evas_object_rectangle_add(evas);
+	evas_object_move(erect, x, y);
+	evas_object_resize(erect, SCREEN_WIDTH, LIST_LOGO_HEIGHT);
+	evas_object_color_set(erect, 0, 0, 0, 0);
+	evas_object_event_callback_add(erect, EVAS_CALLBACK_MOUSE_DOWN, callback, data);
+	evas_object_data_set(erect, "text", etext);
+
+	evas_object_show(erect);
 	evas_object_show(ebox);
 }
 
