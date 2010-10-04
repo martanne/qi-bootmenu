@@ -32,9 +32,6 @@ MenuItem menu[] = {
 #define LIST_LOGO_WIDTH 100
 #define LIST_LOGO_HEIGHT 80
 
-#define GRID_LOGO_WIDTH 200
-#define GRID_LOGO_HEIGHT 180
-
 #include "gui-list.c"
 
 Gui guis[] = {
