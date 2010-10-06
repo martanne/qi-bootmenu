@@ -13,8 +13,15 @@ static void gui_show_error(const char *errstr, ...) {
 
 static void gui_item_clicked(void *data, Evas *evas, Evas_Object *item, void *event) {
 	MenuItem *menu = data;
-	if (gui->select)
+	if (gui->select) {
 		gui->select(item);
+		/* flush all changes of the whole canvas to the screen.
+		 * normally this would be done once the event handler
+		 * returns, however in our case this might never happen
+		 * because the menu callback could kexec a kernel.
+		 */
+		evas_render(evas);
+	}
 	menu->callback(menu->data);
 	if (gui->deselect)
 		gui->deselect(item);
