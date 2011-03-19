@@ -167,13 +167,14 @@ int main(int argc, char **argv) {
 				break;
 			}
 		}
-		MenuItem item = {
-			.text = s->dev,
-			.logo = s->logo,
-			.callback = gui_bootitem_clicked,
-			.data = s,
-		};
-		gui->add(&item);
+		MenuItem *item = malloc(sizeof(MenuItem));
+		if (!item)
+			continue;
+		item->text = s->dev;
+		item->logo = s->logo;
+		item->callback = gui_bootitem_clicked;
+		item->data = s;
+		gui->add(item);
 	}
 
 	/* add pre defined menu entries */
